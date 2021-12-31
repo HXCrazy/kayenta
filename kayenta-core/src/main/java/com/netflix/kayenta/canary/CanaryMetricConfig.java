@@ -38,4 +38,14 @@ public class CanaryMetricConfig {
   @NotNull @Singular @Getter private Map<String, Map> analysisConfigurations;
 
   @Getter private String scopeName;
+
+  @Getter private Integer algorithmType;
+
+  @Getter private Double standardThreshold;
+
+  @Getter private Double powerA;
+
+  @Getter private Double powerB;
+
+  @Builder.Default @Getter private Boolean allowJitter = true;
 }

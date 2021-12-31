@@ -48,6 +48,8 @@ public class MetricSet {
 
   @Singular @Getter private Map<String, String> attributes;
 
+  @Getter private Integer algorithmType;
+
   @JsonIgnore private String metricSetKey;
 
   public MetricSet(
@@ -60,6 +62,7 @@ public class MetricSet {
       long stepMillis,
       List<Double> values,
       Map<String, String> attributes,
+      Integer algorithmType,
       String metricSetKey) {
     this.name = name;
     this.tags = tags;
@@ -71,6 +74,7 @@ public class MetricSet {
     this.values = values;
     this.attributes = attributes;
     this.metricSetKey = metricSetKey;
+    this.algorithmType = algorithmType;
   }
 
   public String getMetricSetKey() {

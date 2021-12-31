@@ -25,6 +25,7 @@ case object Low extends MetricClassificationLabel
 case object NodataFailMetric extends MetricClassificationLabel
 case object Nodata extends MetricClassificationLabel
 case object Error extends MetricClassificationLabel
+case object ThresholdError extends MetricClassificationLabel
 
 sealed trait MetricDirection
 object MetricDirection {

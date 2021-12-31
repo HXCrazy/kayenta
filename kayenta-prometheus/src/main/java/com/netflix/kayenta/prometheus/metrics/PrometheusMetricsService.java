@@ -288,7 +288,8 @@ public class PrometheusMetricsService implements MetricsService {
                 .endTimeMillis(prometheusResults.getEndTimeMillis())
                 .endTimeIso(responseEndTimeInstant.toString())
                 .stepMillis(TimeUnit.SECONDS.toMillis(prometheusResults.getStepSecs()))
-                .values(prometheusResults.getValues());
+                .values(prometheusResults.getValues())
+                    .algorithmType(canaryMetricConfig.getAlgorithmType());
 
         Map<String, String> tags = prometheusResults.getTags();
 
@@ -310,7 +311,8 @@ public class PrometheusMetricsService implements MetricsService {
               .endTimeMillis(canaryScope.getEnd().toEpochMilli())
               .endTimeIso(canaryScope.getEnd().toString())
               .stepMillis(TimeUnit.SECONDS.toMillis(canaryScope.getStep()))
-              .values(Collections.emptyList());
+              .values(Collections.emptyList())
+              .algorithmType(canaryMetricConfig.getAlgorithmType());
 
       metricSetBuilder.attribute("query", query);
 

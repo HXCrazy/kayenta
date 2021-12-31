@@ -30,6 +30,8 @@ public class MetricSetPair {
 
   @NotNull @Getter private String id;
 
+  @Getter  private Integer algorithmType;
+
   @NotNull @Singular @Getter private Map<String, String> tags;
 
   @NotNull @Singular @Getter private Map<String, List<Double>> values;
@@ -41,6 +43,7 @@ public class MetricSetPair {
   public MetricSetPair(
       String name,
       String id,
+      Integer algorithmType,
       Map<String, String> tags,
       Map<String, List<Double>> values,
       Map<String, MetricSetScope> scopes,
@@ -51,6 +54,7 @@ public class MetricSetPair {
     this.values = values;
     this.scopes = scopes;
     this.attributes = attributes;
+    this.algorithmType = algorithmType;
   }
 
   @Builder

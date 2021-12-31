@@ -44,19 +44,18 @@ kayenta:
 #          - CONFIGURATION_STORE
 
   aws:
-    enabled: false
-#    accounts:
-#      - name:
-#        bucket:
-#        rootFolder: kayenta
+    enabled: true
+    accounts:
+      - name: huami
+        bucket: huami-test-bucket
+        rootFolder: kayenta
 #        You can set credentials that you supply explicitly (see: AwsManagedAccount.ExplicitAwsCredentials)
-#        explicitCredentials:
-#          accessKey: explicitAccessKey
-#          secretKey: explicitSecretKey
-#          sessionToken: explicitSessionToken (optional)
-#        supportedTypes:
-#          - OBJECT_STORE
-#          - CONFIGURATION_STORE
+        explicitCredentials:
+          accessKey: AKIAXHRFPTBELY55ZZXV
+          secretKey: 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
+        supportedTypes:
+          - OBJECT_STORE
+          - CONFIGURATION_STORE
 
   datadog:
     enabled: false
@@ -91,7 +90,16 @@ kayenta:
 #      endpoint.baseUrl: https://insights-api.newrelic.com
 
   prometheus:
-    enabled: false
+    enabled: true
+    accounts:
+      - name: prometheus-prod-cn
+        endpoint:
+          baseUrl: https://prome-k8s-private-prod-cn.huami.com/
+        supportedTypes:
+          - METRICS_STORE
+
+#  prometheus:
+#    enabled: false
 #   metadataCachingIntervalMS: 60000
 #    accounts:
 #      - name: my-prometheus-account
@@ -132,7 +140,7 @@ kayenta:
     enabled: false
 
   s3:
-    enabled: false
+    enabled: true
 
   stackdriver:
     enabled: false
