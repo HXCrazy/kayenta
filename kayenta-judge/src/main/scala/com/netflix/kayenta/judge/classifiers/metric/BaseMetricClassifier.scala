@@ -71,6 +71,21 @@ object OutlierStrategy {
   }
 }
 
+sealed trait BottomupStrategy
+object BottomupStrategy {
+  case object Greater extends BottomupStrategy
+  case object Less extends BottomupStrategy
+  case object Nothing extends BottomupStrategy
+
+  def parse(bottomupStrategy: String): BottomupStrategy = {
+    bottomupStrategy match {
+      case "greater" => BottomupStrategy.Greater
+      case "less" => BottomupStrategy.Less
+      case _ => BottomupStrategy.Nothing
+    }
+  }
+}
+
 case class MetricClassification(classification: MetricClassificationLabel,
                                 reason: Option[String],
                                 deviation: Double,

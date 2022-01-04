@@ -43,9 +43,5 @@ public class CanaryMetricConfig {
 
   @Getter private Double standardThreshold;
 
-  @Getter private Double powerA;
-
-  @Getter private Double powerB;
-
   @Builder.Default @Getter private Boolean allowJitter = true;
 }

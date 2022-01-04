@@ -17,13 +17,13 @@
 package com.netflix.kayenta.judge.classifiers.metric
 import com.netflix.kayenta.canary.CanaryMetricConfig
 import com.netflix.kayenta.judge.Metric
-import com.netflix.kayenta.judge.stats.{DescriptiveStatistics, EffectSizes, MetricStatistics}
+import com.netflix.kayenta.judge.stats.{DescriptiveStatistics, MetricStatistics}
+import com.netflix.kayenta.judge.utils.MapUtils
 
 case class MeanAndStdComparisonResult(classification: MetricClassificationLabel, reason: Option[String], score: Double, threhold: Double)
 
 class MeanAndStdClassifier(reqCount:Double=Double.NaN,
-                           effectSizeThresholds:(Double, Double)=(1.0, 1.0), metricConfig:CanaryMetricConfig,
-                           powerA:Double=0.4, powerB:Double= -0.616051727599457) extends BaseMetricClassifier{
+                           effectSizeThresholds:(Double, Double)=(1.0, 1.0), metricConfig:CanaryMetricConfig) extends BaseMetricClassifier{
 
   override def classify(control: Metric, experiment: Metric, direction: MetricDirection,
                         nanStrategy: NaNStrategy, isCriticalMetric: Boolean, isDataRequired: Boolean): MetricClassification = {
@@ -42,6 +42,7 @@ class MeanAndStdClassifier(reqCount:Double=Double.NaN,
     }
     val comparisonResult = compare(control, experiment, controlStats, experimentStats, metricConfig)
     var value = 1.0
+    // Eliminate trends that can be tolerated
     if (High.equals(comparisonResult.classification) || Low.equals(comparisonResult.classification)){
       value = 0.0
       if (direction == MetricDirection.Increase){
@@ -53,6 +54,18 @@ class MeanAndStdClassifier(reqCount:Double=Double.NaN,
         if (controlStats.mean < experimentStats.mean && controlStats.std >= experimentStats.std){
           return MetricClassification(Pass, None, 1.0, critical = true)
         }
+      }
+    }
+    // Bottom-up strategy, Compare average
+    val bottomupStrategyString = MapUtils.getAsStringWithDefault("none", metricConfig.getAnalysisConfigurations, "canary", "bottomup", "strategy")
+    val bottomupStrategyThreshold = MapUtils.getAsDoubleWithDefault(Double.NaN, metricConfig.getAnalysisConfigurations, "canary", "bottomup", "threshold")
+    val bottomupStrategy = BottomupStrategy.parse(bottomupStrategyString)
+    if (bottomupStrategy != BottomupStrategy.Nothing && !bottomupStrategyThreshold.isNaN){
+      if (bottomupStrategy == BottomupStrategy.Less && experimentStats.mean > bottomupStrategyThreshold){
+        MetricClassification(High, None, 0.0, critical = true)
+      }
+      if (bottomupStrategy == BottomupStrategy.Greater && experimentStats.mean < bottomupStrategyThreshold){
+        MetricClassification(Low, None, 0.0, critical = true)
       }
     }
     MetricClassification(comparisonResult.classification, comparisonResult.reason,  value, critical = true)
@@ -103,7 +116,9 @@ class MeanAndStdClassifier(reqCount:Double=Double.NaN,
 //        threshold = 0.00001
 //      }
     }else{
-      if (null != metricConfig.getPowerA && null != metricConfig.getPowerB){
+      val powerA = MapUtils.getAsDoubleWithDefault(Double.NaN, metricConfig.getAnalysisConfigurations, "canary", "powerA")
+      val powerB = MapUtils.getAsDoubleWithDefault(Double.NaN, metricConfig.getAnalysisConfigurations, "canary", "powerB")
+      if (!powerA.isNaN && !powerB.isNaN){
         threshold = powerA * math.pow(reqCount, powerB)
       }
     }
