@@ -35,7 +35,10 @@ class MeanAndStdClassifier(reqCount:Double=Double.NaN,
     val experimentStats = DescriptiveStatistics.summary(experiment)
     val controlStats = DescriptiveStatistics.summary(control)
 
-    if (!metricConfig.getAllowJitter && !checkJitter(controlStats, experimentStats, direction)){
+    val allowJitter = MapUtils.getAsBooleanWithDefault(true, metricConfig.getAnalysisConfigurations, "canary", "allowJitter", "enable")
+    val allowJitterThreshold = MapUtils.getAsDoubleWithDefault(Double.NaN, metricConfig.getAnalysisConfigurations, "canary", "allowJitter", "threshold")
+
+    if (!allowJitter && !allowJitterThreshold.isNaN && !checkJitter(allowJitterThreshold, controlStats, experimentStats, direction)){
       val reason = if (controlStats.mean > experimentStats.mean) s"The metric ${experiment.name} was classified as $High (Critical)" else s"The metric ${experiment.name} was classified as $Low (Critical)"
       val classificationResult = if (controlStats.mean > experimentStats.mean)  High else Low
       return MetricClassification(classificationResult, Some(reason), 0.0, critical = true)
@@ -71,8 +74,8 @@ class MeanAndStdClassifier(reqCount:Double=Double.NaN,
     MetricClassification(comparisonResult.classification, comparisonResult.reason,  value, critical = true)
   }
 
-  private def checkJitter(controlStats:MetricStatistics, experimentStats:MetricStatistics, direction: MetricDirection):Boolean={
-    if (controlStats.std == 0 && experimentStats.std > 0) {
+  private def checkJitter(allowJitterThreshold:Double, controlStats:MetricStatistics, experimentStats:MetricStatistics, direction: MetricDirection):Boolean={
+    if (controlStats.std == 0 && controlStats.mean == allowJitterThreshold && experimentStats.std > 0) {
       if ((direction == MetricDirection.Decrease || direction == MetricDirection.Either) && controlStats.mean > experimentStats.mean){
         return false
       }

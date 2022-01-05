@@ -30,7 +30,7 @@ public class MetricSetPair {
 
   @NotNull @Getter private String id;
 
-  @Getter  private Integer algorithmType;
+  @Getter private Integer algorithmType;
 
   @NotNull @Singular @Getter private Map<String, String> tags;
 

@@ -289,7 +289,7 @@ public class PrometheusMetricsService implements MetricsService {
                 .endTimeIso(responseEndTimeInstant.toString())
                 .stepMillis(TimeUnit.SECONDS.toMillis(prometheusResults.getStepSecs()))
                 .values(prometheusResults.getValues())
-                    .algorithmType(canaryMetricConfig.getAlgorithmType());
+                .algorithmType(canaryMetricConfig.getAlgorithmType());
 
         Map<String, String> tags = prometheusResults.getTags();
 
