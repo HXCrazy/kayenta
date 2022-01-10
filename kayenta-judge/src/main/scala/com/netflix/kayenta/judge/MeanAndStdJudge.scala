@@ -41,7 +41,7 @@ class MeanAndStdJudge extends CanaryJudge with StrictLogging{
     val reqCount = getReqCount(reqCountMetricOption)
     var metricResults:List[CanaryAnalysisResult] = List()
     if (!reqCount.isNaN && reqCount <=0 ){
-      metricResults = metricResults:+bulidFailureAnalysisResult(reqCountMetricOption, canaryConfig)
+      metricResults = metricResults:+bulidFailureAnalysisResult(metricSetPairList, canaryConfig)
     }else{
       val analysisMetricPairList:util.List[MetricSetPair] = metricSetPairList.stream().filter(metricSetPair => null == metricSetPair.getAlgorithmType).collect(Collectors.toList())
       //Metric Classification
@@ -54,19 +54,24 @@ class MeanAndStdJudge extends CanaryJudge with StrictLogging{
     scoringHelper.score(canaryConfig, orchestratorScoreThresholds, metricResults)
   }
 
-  def bulidFailureAnalysisResult(reqCountMetricOption: util.Optional[MetricSetPair], canaryConfig: CanaryConfig):CanaryAnalysisResult={
-    val metricPair = reqCountMetricOption.get()
-    val metricConfig = canaryConfig.getMetrics.asScala.find(m => m.getName == metricPair.getName) match {
-      case Some(config) => config
-      case None => throw new IllegalArgumentException(s"Could not find metric config for ${metricPair.getName}")
+  def bulidFailureAnalysisResult(metricSetPairList: util.List[MetricSetPair], canaryConfig: CanaryConfig):CanaryAnalysisResult={
+//    val metricPair = reqCountMetricOption.get()
+    metricSetPairList.asScala.toList.map { metricPair =>{
+      val metricConfig = canaryConfig.getMetrics.asScala.find(m => m.getName == metricPair.getName) match {
+        case Some(config) => config
+        case None => throw new IllegalArgumentException(s"Could not find metric config for ${metricPair.getName}")
+      }
+        CanaryAnalysisResult.builder()
+          .name(metricPair.getName)
+          .id(metricPair.getId)
+          .tags(metricPair.getTags)
+          .classification(NodataFailMetric.toString)
+          .groups(metricConfig.getGroups)
+          .critical(true)
+          .build()
+      }
     }
-    CanaryAnalysisResult.builder()
-      .name(metricPair.getName)
-      .id(metricPair.getId)
-      .tags(metricPair.getTags)
-      .classification(NodataFailMetric.toString)
-      .groups(metricConfig.getGroups)
-      .build()
+
   }
 
   def getReqCount(reqCountMetricOption: util.Optional[MetricSetPair]):Double={
@@ -154,7 +159,7 @@ class MeanAndStdJudge extends CanaryJudge with StrictLogging{
       resultBuilder
         .classification(metricClassification.classification.toString)
         .classificationReason(metricClassification.reason.orNull)
-        .critical(metricClassification.critical)
+        .critical(isCriticalMetric)
         .resultMetadata(Map("ratio" -> metricClassification.deviation.asInstanceOf[Object]).asJava)
         .build()
 
@@ -162,7 +167,7 @@ class MeanAndStdJudge extends CanaryJudge with StrictLogging{
       case e: RuntimeException =>
         logger.error("Metric Classification Failed", e)
         resultBuilder
-          .critical(true)
+          .critical(isCriticalMetric)
           .classification(Error.toString)
           .classificationReason("Metric Classification Failed")
           .build()
